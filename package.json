@@ -1,0 +1,38 @@
+{
+  "name": "fastify-boilerplate-app",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "A boilerplate for a fastify backend. Individual components of this have potential as publishable plugins.",
+  "main": "src/app.ts",
+  "scripts": {
+    "build": "rimraf dist && tsc -p tsconfig.json",
+    "start": "node dist/app.js"
+  },
+  "keywords": [
+    "fastify",
+    "design",
+    "patterns",
+    "boilerplate"
+  ],
+  "author": "Frank Wazeter",
+  "license": "ISC",
+  "dependencies": {
+    "@fastify/autoload": "^5.8.0",
+    "@fastify/env": "^4.3.0",
+    "@fastify/mongodb": "^8.0.0",
+    "@fastify/type-provider-json-schema-to-ts": "^2.2.2",
+    "dotenv": "^16.3.1",
+    "fastify": "^4.25.2",
+    "fastify-plugin": "^4.5.1",
+    "mongodb": "^6.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.5",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.3.3"
+  },
+  "exports": {
+    "import": "./dist/app.js",
+    "require": "./dist/app.js"
+  }
+}
