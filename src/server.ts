@@ -10,7 +10,7 @@ import { MongoDbManager } from "./plugins/MongoDbManager.js";
 import dbManager from "./plugins/dbManager.js";
 import routeFactory from "./plugins/route-factory/index.js";
 import {RouteFactoryOptions} from "./plugins/route-factory/types.js";
-import {SchemaBuilder} from "./plugins/schema-builder/index.js";
+import SchemaBuilder from "./plugins/schema-builder/index.js";
 
 // Schema definition for the environment variables to be validated by fastify-env.
 const envSchema = {
@@ -95,20 +95,38 @@ async function buildServer() {
         })
     }).valueOf();*/
 
-    const productSchema = SchemaBuilder.add({
-        name: 'string',
+    /*const productSchema = SchemaBuilder.add({
+        name: { type: 'string', minLength: 2, maxLength: 10 },
         price: 'number',
         email: 'email',
         inStock: 'boolean',
         tags: 'array',
         details: {
-            manufacturer: 'string',
-            warranty: 'string'
+            type: 'object',
+            properties: {
+                manufacturer: 'string',
+                warranty: 'string'
+            }
         }
         // Add more properties as needed
     }, ['name', 'price', 'email', 'details.manufacturer']).valueOf();
 
-    console.log(productSchema.valueOf());
+    console.log(JSON.stringify(productSchema, null, 2));*/
+
+    const productSchema = new SchemaBuilder()
+        .addProperty('details', 'object', {
+            properties: {
+                manufacturer: { type: 'string' }
+            },
+            required: ['manufacturer']
+        })
+        .build();
+
+
+    console.log(JSON.stringify(productSchema, null, 2));
+
+// Use productSchema in your Fastify route
+
 
     // Configure RouteBuilder plugin options
     const routeBuilderOptions: RouteFactoryOptions = {

@@ -1,96 +1,97 @@
-import {ObjectSchema, S} from 'fluent-json-schema';
+import { SchemaType, SchemaDefinition } from "./types.js"
 
-export class SchemaBuilder {
+/**
+ * A utility class for building JSON Schemas, particularly for use with Fastify.
+ * This class provides a fluent API to construct a JSON schema object dynamically.
+ *
+ * Example Usage:
+ *
+ * Creating a product schema with various properties including a nested 'details' object.
+ *
+ * const productSchema = new SchemaBuilder()
+ *     .addProperty('name', 'string', { minLength: 2, maxLength: 10 })
+ *     .addProperty('price', 'number')
+ *     .addProperty('email', 'string', { format: 'email' })
+ *     .addProperty('inStock', 'boolean')
+ *     .addProperty('tags', 'array')
+ *     .addProperty('details', 'object', {
+ *         properties: {
+ *             manufacturer: { type: 'string' },
+ *             warranty: { type: 'string' }
+ *         },
+ *         required: ['manufacturer']
+ *     })
+ *     .setRequired(['name', 'price', 'email'])
+ *     .build();
+ *
+ * // The resulting productSchema is a JSON schema object that can be used with Fastify.
+ */
+class SchemaBuilder {
+    private readonly schema: {
+        type: 'object';
+        properties: Record<string, SchemaDefinition>;
+        required: string[];
+    };
+
     /**
-     * Adds properties to a schema with common configurations and handles nested objects.
-     * @param properties - An object mapping property names to their types or nested schemas.
-     * @param requiredFields - An array of strings representing the names of required fields.
-     * @returns A Fluent JSON Schema for the object.
+     * Constructs a new SchemaBuilder instance.
+     * Initializes the schema as an empty object with no properties and no required fields.
      */
-    static add(properties: Record<string, any>, requiredFields: string[] = []) {
-        return SchemaBuilder.buildObjectSchema(properties, new Set(requiredFields));
+    constructor() {
+        this.schema = {
+            type: 'object',
+            properties: {},
+            required: []
+        };
     }
 
-    private static buildObjectSchema(properties: Record<string, any>, requiredFields: Set<string>, path: string = ''): ObjectSchema {
-        let schema = S.object();
-        let currentLevelRequiredFields = new Set<string>();
+    /**
+     * Adds a property to the schema.
+     * @param name The name of the property.
+     * @param type The JSON schema data type of the property.
+     * @param options Additional options for the property, including nested properties and required fields for objects.
+     * @returns The SchemaBuilder instance for method chaining.
+     */
+    addProperty(name: string, type: SchemaType, options: SchemaDefinition = { type }): SchemaBuilder {
+        const { properties, required, ...otherOptions } = options;
 
-        for (const [key, value] of Object.entries(properties)) {
-            const currentPath = path ? `${path}.${key}` : key;
-            let fieldSchema;
-
-            if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-                // Nested object
-                fieldSchema = SchemaBuilder.buildObjectSchema(value, requiredFields, currentPath);
-            } else {
-                // Primitive type
-                fieldSchema = SchemaBuilder.getType(value);
+        if (type === 'object') {
+            // Handle object properties, including nested properties and required fields
+            this.schema.properties[name] = {
+                type: 'object',
+                properties: properties || {},
+                required: required || [],
+                ...otherOptions
+            };
+            if (required && required.length > 0) {
+                // If there are required fields in a nested object, mark the object itself as required
+                this.setRequired([name]);
             }
-
-            if (requiredFields.has(currentPath) || (typeof value === 'object' && value !== null && SchemaBuilder.hasNestedRequiredFields(value, requiredFields, currentPath))) {
-                currentLevelRequiredFields.add(key);
-            }
-
-            schema = schema.prop(key, fieldSchema);
+        } else {
+            // Handle non-object properties
+            this.schema.properties[name] = { type, ...otherOptions };
         }
-
-        if (currentLevelRequiredFields.size > 0) {
-            schema = schema.required(Array.from(currentLevelRequiredFields));
-        }
-
-        return schema;
+        return this;
     }
 
-    private static hasNestedRequiredFields(properties: Record<string, any>, requiredFields: Set<string>, path: string): boolean {
-        for (const [key, _] of Object.entries(properties)) {
-            const currentPath = `${path}.${key}`;
-            if (requiredFields.has(currentPath)) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    private static getType(type: string) {
-        switch (type) {
-            case 'string':
-                return S.string();
-            case 'number':
-                return S.number();
-            case 'integer':
-                return S.integer();
-            case 'boolean':
-                return S.boolean();
-            case 'null':
-                return S.null();
-            case 'array':
-                return S.array().items(S.string());
-            case 'object':
-                return S.object();
-            case 'date':
-                return S.string().format('date');
-            case 'time':
-                return S.string().format('time');
-            case 'dateTime':
-                return S.string().format('date-time');
-            case 'email':
-                return S.string().format('email');
-            case 'hostname':
-                return S.string().format('hostname');
-            case 'ipv4':
-                return S.string().format('ipv4');
-            case 'ipv6':
-                return S.string().format('ipv6');
-            case 'uri':
-                return S.string().format('uri');
-            case 'binary':
-                return S.string().contentEncoding('binary');
-            case 'byte':
-                return S.string().contentEncoding('base64');
-            // Add more specific cases as needed
-            default:
-                throw new Error(`Unsupported type for schema property: ${type}`);
-        }
+    /**
+     * Marks certain fields as required at the root level of the schema.
+     * @param fields An array of field names to be marked as required.
+     * @returns The SchemaBuilder instance for method chaining.
+     */
+    setRequired(fields: string[]): SchemaBuilder {
+        // Ensures no duplicates in the required array
+        this.schema.required = Array.from(new Set([...this.schema.required, ...fields]));
+        return this;
     }
 
+    /**
+     * Builds and returns the JSON schema object.
+     * @returns The constructed JSON schema object.
+     */
+    build(): { type: 'object'; properties: Record<string, SchemaDefinition>; required: string[] } {
+        return this.schema;
+    }
 }
+
+export default SchemaBuilder;
