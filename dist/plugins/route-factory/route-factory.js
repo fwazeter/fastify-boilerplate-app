@@ -1,4 +1,4 @@
-export class RouteBuilder {
+export class RouteFactory {
     fastify;
     options;
     constructor(fastify, options) {
@@ -82,4 +82,4 @@ export class RouteBuilder {
         }
     }
 }
-//# sourceMappingURL=route-builder.js.map
+//# sourceMappingURL=route-factory.js.map

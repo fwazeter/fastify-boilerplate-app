@@ -1,15 +1,31 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { RouteFactoryOptions, CollectionConfig, FieldConfig, RouteParams } from './types.js';
 
-export class RouteBuilder {
+/**
+ * The RouteFactory class is responsible for dynamically creating and registering API routes
+ * based on provided configuration options in a Fastify application.
+ */
+export class RouteFactory {
+    /**
+     * Initializes a new instance of the RouteFactory class.
+     * @param fastify - The FastifyInstance to which the routes will be registered.
+     * @param options - Configuration options for route creation.
+     */
     constructor(private fastify: FastifyInstance, private options: RouteFactoryOptions) {}
 
+    /**
+     * Iterates over each collection defined in the options and registers corresponding API routes.
+     */
     public registerRoutes() {
         this.options.collections.forEach((collection) => {
             this.registerCollectionRoutes(collection);
         });
     }
 
+    /**
+     * Registers API routes for a specific collection. This includes the CRUD operations.
+     * @param collection - The collection configuration for which to register routes.
+     */
     private registerCollectionRoutes(collection: CollectionConfig) {
         const basePath = `${this.options.basePath}/${collection.name}`;
         this.fastify.post(basePath, async (request, reply) => {

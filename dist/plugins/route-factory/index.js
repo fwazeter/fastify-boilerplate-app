@@ -1,7 +1,7 @@
-import { RouteBuilder } from './route-builder.js';
+import { RouteFactory } from './route-factory.js';
 const routeFactory = (fastify, options, done) => {
-    const routeBuilder = new RouteBuilder(fastify, options);
-    routeBuilder.registerRoutes();
+    const routeFactory = new RouteFactory(fastify, options);
+    routeFactory.registerRoutes();
     done();
 };
 export default routeFactory;
