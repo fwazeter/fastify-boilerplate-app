@@ -1,3 +1,4 @@
+import { ObjectId } from 'mongodb';
 export class MongoDbManager {
     fastifyInstance;
     constructor(fastifyInstance) {
@@ -5,6 +6,9 @@ export class MongoDbManager {
     }
     getCollection(collectionName) {
         return this.fastifyInstance.mongo.db.collection(collectionName);
+    }
+    getID(idString) {
+        return new ObjectId(idString);
     }
     async find(collection, query, options) {
         return this.getCollection(collection).find(query, options).toArray();

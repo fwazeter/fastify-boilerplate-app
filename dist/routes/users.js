@@ -6,9 +6,6 @@ export default async function (app, opts) {
         const result = await app.db.insert('users', user);
         reply.code(201).send(result);
     });
-    app.get('/users/hello', async (request, reply) => {
-        return { message: 'Hello, this is working' };
-    });
     app.get('/users', async (request, reply) => {
         try {
             const users = await app.db.find('users', {});

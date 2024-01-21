@@ -1,7 +1,7 @@
 // MongoDbManager.ts
 import { FastifyInstance } from 'fastify';
 import { IDatabaseClient } from "../types/IDatabaseClient.js";
-import { Collection } from 'mongodb';
+import { Collection, ObjectId } from 'mongodb';
 
 /**
  * MongoDbManager class implements IDatabaseClient interface to manage MongoDB operations.
@@ -25,6 +25,15 @@ export class MongoDbManager implements IDatabaseClient {
      */
     private getCollection(collectionName: string): Collection {
         return this.fastifyInstance.mongo.db.collection(collectionName);
+    }
+
+    /**
+     * Converts a string to a MongoDB ObjectId.
+     * @param idString The string to convert.
+     * @returns The converted ObjectId.
+     */
+    public getID(idString: string): ObjectId {
+        return new ObjectId(idString);
     }
 
     /**

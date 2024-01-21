@@ -1,5 +1,15 @@
 export interface IDatabaseClient {
     /**
+     * Method to convert a string representation of an ID to a database-specific ID format.
+     * This method is particularly useful for databases like MongoDB that use specific
+     * formats for their IDs (e.g., ObjectId in MongoDB).
+     *
+     * @param idString The string representation of the ID to convert.
+     * @returns The converted ID in the database-specific format.
+     */
+    getID(idString: string): any;
+
+    /**
      * Method to find multiple documents in a specified collection in the database.
      * @param collection The name of the collection to query.
      * @param query The search criteria.

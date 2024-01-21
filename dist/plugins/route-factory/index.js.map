@@ -1,0 +1,1 @@
+{"version":3,"file":"index.js","sourceRoot":"","sources":["../../../src/plugins/route-factory/index.ts"],"names":[],"mappings":"AAIA,OAAO,EAAE,YAAY,EAAE,MAAM,oBAAoB,CAAC;AAKlD,MAAM,YAAY,GAA+C,CAAC,OAAO,EAAE,OAAO,EAAE,IAAI,EAAE,EAAE;IACxF,MAAM,YAAY,GAAG,IAAI,YAAY,CAAC,OAAO,EAAE,OAAO,CAAC,CAAC;IACxD,YAAY,CAAC,cAAc,EAAE,CAAC;IAC9B,IAAI,EAAE,CAAC;AACX,CAAC,CAAC;AAEF,eAAe,YAAY,CAAC"}

@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 import dbConnection from "./plugins/dbConnection.js";
 import { MongoDbManager } from "./plugins/MongoDbManager.js";
 import dbManager from "./plugins/dbManager.js";
+import routeFactory from "./plugins/route-factory/index.js";
 const envSchema = {
     type: 'object',
     required: ['PORT', 'DB_URL', 'DB_NAME'],
@@ -57,6 +58,19 @@ async function buildServer() {
         dir: path.join(__dirname, 'routes'),
         options: { prefix: '/api' },
     });
+    const routeBuilderOptions = {
+        basePath: '/test',
+        collections: [
+            {
+                name: 'products',
+                fields: [
+                    { key: 'name', type: 'string' },
+                    { key: 'price', type: 'number' }
+                ]
+            }
+        ]
+    };
+    app.register(routeFactory, routeBuilderOptions);
     return app;
 }
 export default buildServer;

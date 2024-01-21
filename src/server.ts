@@ -8,6 +8,8 @@ import {IEnvConfig} from "./types/IEnvConfig.js";
 import {IMongoDBConfig, IDatabaseConfig} from "./types/IDatabaseConfig.js";
 import { MongoDbManager } from "./plugins/MongoDbManager.js";
 import dbManager from "./plugins/dbManager.js";
+import routeFactory from "./plugins/route-factory/index.js";
+import {RouteFactoryOptions} from "./plugins/route-factory/types.js";
 
 // Schema definition for the environment variables to be validated by fastify-env.
 const envSchema = {
@@ -80,6 +82,23 @@ async function buildServer() {
         dir: path.join(__dirname, 'routes'),
         options: { prefix: '/api' }, // Prefix for all routes loaded by this plugin.
     });
+
+    // Configure RouteBuilder plugin options
+    const routeBuilderOptions: RouteFactoryOptions = {
+        basePath: '/test',
+        collections: [
+            {
+                name: 'products', // Example collection
+                fields: [
+                    { key: 'name', type: 'string' },
+                    { key: 'price', type: 'number' }
+                ]
+            }
+            // Add more collections as needed
+        ]
+    };
+
+    app.register(routeFactory, routeBuilderOptions);
 
     // Return the configured Fastify instance.
     return app;
