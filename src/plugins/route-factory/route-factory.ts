@@ -1,4 +1,4 @@
-import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import { FastifyInstance, FastifyRequest, FastifyReply, FastifySchema } from 'fastify';
 import { RouteFactoryOptions, CollectionConfig, FieldConfig, RouteParams } from './types.js';
 
 /**
@@ -28,23 +28,30 @@ export class RouteFactory {
      */
     private registerCollectionRoutes(collection: CollectionConfig) {
         const basePath = `${this.options.basePath}/${collection.name}`;
-        this.fastify.post(basePath, async (request, reply) => {
+
+        // Define schemas for different methods
+        const postSchema: FastifySchema = collection.schema?.post?.valueOf() || {};
+        const getSchema: FastifySchema = collection.schema?.get?.valueOf() || {};
+        const putSchema: FastifySchema = collection.schema?.put?.valueOf() || {};
+        const deleteSchema: FastifySchema = collection.schema?.delete?.valueOf() || {};
+
+        this.fastify.post(basePath, { schema: postSchema }, async (request, reply) => {
             return this.handleCollectionCreate(request, reply, collection.fields);
         });
 
-        this.fastify.get(basePath, async (request, reply) => {
+        this.fastify.get(basePath, { schema: getSchema }, async (request, reply) => {
             return this.handleCollectionRead(request, reply, collection.fields);
         });
 
-        this.fastify.get<{ Params: RouteParams }>(`${basePath}/:id`, async (request, reply) => {
+        this.fastify.get<{ Params: RouteParams }>(`${basePath}/:id`,{ schema: getSchema }, async (request, reply) => {
             return this.handleCollectionReadOne(request, reply);
         });
 
-        this.fastify.put<{ Params: RouteParams }>(`${basePath}/:id`, async (request, reply) => {
+        this.fastify.put<{ Params: RouteParams }>(`${basePath}/:id`,{ schema: putSchema }, async (request, reply) => {
             return this.handleCollectionUpdate(request, reply);
         });
 
-        this.fastify.delete<{ Params: RouteParams }>(`${basePath}/:id`, async (request, reply) => {
+        this.fastify.delete<{ Params: RouteParams }>(`${basePath}/:id`,{ schema: deleteSchema }, async (request, reply) => {
             return this.handleCollectionDelete(request, reply);
         });
     }
@@ -58,7 +65,7 @@ export class RouteFactory {
         // For example, perform field-specific validation or transformation.
 
         try {
-            const result = await this.fastify.db.insert(request.routerPath.split('/')[2], request.body);
+            const result = await this.fastify.db.insert(request.routeOptions.url.split('/')[2], request.body);
             return reply.code(201).send(result);
         } catch (error) {
             return reply.code(500).send({ error: "An error occurred while creating data" });
@@ -73,7 +80,7 @@ export class RouteFactory {
         // Implement any field-specific logic for reading data, if necessary.
 
         try {
-            const items = await this.fastify.db.find(request.routerPath.split('/')[2], {});
+            const items = await this.fastify.db.find(request.routeOptions.url.split('/')[2], {});
             return reply.send(items);
         } catch (error) {
             return reply.code(500).send({ error: "An error occurred while fetching data" });
@@ -86,7 +93,7 @@ export class RouteFactory {
     ) {
         try {
             const id = this.fastify.db.getID(request.params.id);
-            const item = await this.fastify.db.findOne(request.routerPath.split('/')[2], { _id: id });
+            const item = await this.fastify.db.findOne(request.routeOptions.url.split('/')[2], { _id: id });
             if (item) {
                 return reply.send(item);
             } else {
@@ -103,7 +110,7 @@ export class RouteFactory {
     ) {
         try {
             const id = this.fastify.db.getID(request.params.id);
-            const result = await this.fastify.db.update(request.routerPath.split('/')[2], { _id: id }, { $set: request.body });
+            const result = await this.fastify.db.update(request.routeOptions.url.split('/')[2], { _id: id }, { $set: request.body });
             return reply.code(200).send({ message: 'Item updated', result });
         } catch (error) {
             return reply.code(500).send({ error: "An error occurred while updating the item" });
@@ -116,7 +123,7 @@ export class RouteFactory {
     ) {
         try {
             const id = this.fastify.db.getID(request.params.id);
-            const result = await this.fastify.db.delete(request.routerPath.split('/')[2], { _id: id });
+            const result = await this.fastify.db.delete(request.routeOptions.url.split('/')[2], { _id: id });
             return reply.code(200).send({ message: 'Item deleted', result });
         } catch (error) {
             return reply.code(500).send({ error: "An error occurred while deleting the item" });

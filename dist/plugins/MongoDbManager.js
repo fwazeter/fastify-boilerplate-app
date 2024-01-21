@@ -1,10 +1,13 @@
-import { ObjectId } from 'mongodb';
+import { ObjectId } from '@fastify/mongodb';
 export class MongoDbManager {
     fastifyInstance;
     constructor(fastifyInstance) {
         this.fastifyInstance = fastifyInstance;
     }
     getCollection(collectionName) {
+        if (!this.fastifyInstance.mongo || !this.fastifyInstance.mongo.db) {
+            throw new Error('MongoDB connection is not established');
+        }
         return this.fastifyInstance.mongo.db.collection(collectionName);
     }
     getID(idString) {

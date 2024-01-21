@@ -1,7 +1,8 @@
 // MongoDbManager.ts
 import { FastifyInstance } from 'fastify';
 import { IDatabaseClient } from "../types/IDatabaseClient.js";
-import { Collection, ObjectId } from 'mongodb';
+import { ObjectId } from '@fastify/mongodb';
+import { Collection } from 'mongodb';
 
 /**
  * MongoDbManager class implements IDatabaseClient interface to manage MongoDB operations.
@@ -24,6 +25,9 @@ export class MongoDbManager implements IDatabaseClient {
      * @returns The MongoDB Collection object.
      */
     private getCollection(collectionName: string): Collection {
+        if (!this.fastifyInstance.mongo || !this.fastifyInstance.mongo.db) {
+            throw new Error('MongoDB connection is not established');
+        }
         return this.fastifyInstance.mongo.db.collection(collectionName);
     }
 

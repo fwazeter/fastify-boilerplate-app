@@ -10,6 +10,7 @@ import { MongoDbManager } from "./plugins/MongoDbManager.js";
 import dbManager from "./plugins/dbManager.js";
 import routeFactory from "./plugins/route-factory/index.js";
 import {RouteFactoryOptions} from "./plugins/route-factory/types.js";
+import {SchemaBuilder} from "./plugins/schema-builder/index.js";
 
 // Schema definition for the environment variables to be validated by fastify-env.
 const envSchema = {
@@ -83,6 +84,32 @@ async function buildServer() {
         options: { prefix: '/api' }, // Prefix for all routes loaded by this plugin.
     });
 
+    /*const productSchema = SchemaBuilder.object({
+        name: SchemaBuilder.string(3, 50).required(),
+        price: SchemaBuilder.number(0),
+        inStock: SchemaBuilder.boolean(),
+        tags: SchemaBuilder.array(SchemaBuilder.string()),
+        details: SchemaBuilder.object({
+            manufacturer: SchemaBuilder.string(),
+            warranty: SchemaBuilder.string()
+        })
+    }).valueOf();*/
+
+    const productSchema = SchemaBuilder.add({
+        name: 'string',
+        price: 'number',
+        email: 'email',
+        inStock: 'boolean',
+        tags: 'array',
+        details: {
+            manufacturer: 'string',
+            warranty: 'string'
+        }
+        // Add more properties as needed
+    }, ['name', 'price', 'email', 'details.manufacturer']).valueOf();
+
+    console.log(productSchema.valueOf());
+
     // Configure RouteBuilder plugin options
     const routeBuilderOptions: RouteFactoryOptions = {
         basePath: '/test',
@@ -92,11 +119,16 @@ async function buildServer() {
                 fields: [
                     { key: 'name', type: 'string' },
                     { key: 'price', type: 'number' }
-                ]
+                ],
+                schema: {
+                    post: {body: productSchema }
+                }
             }
             // Add more collections as needed
         ]
     };
+    console.log(routeBuilderOptions);
+    console.log(routeBuilderOptions.collections[0].schema);
 
     app.register(routeFactory, routeBuilderOptions);
 

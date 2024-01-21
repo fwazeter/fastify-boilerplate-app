@@ -1,4 +1,4 @@
-import { Db, MongoClient } from 'mongodb';
+//import { db, client } from '@fastify/mongodb';
 import { IDatabaseClient } from './IDatabaseClient.js'; // Adjust the import path as needed
 
 declare module 'fastify' {
@@ -9,10 +9,12 @@ declare module 'fastify' {
             DB_NAME: string;
             // ... other configuration properties ...
         };
-        mongo: {
-            db: Db;
-            client: MongoClient;
-        };
         db: IDatabaseClient; // Generic database client interface
     }
 }
+
+/*
+mongo: {
+    db: Db;
+    client: MongoClient;
+};*/

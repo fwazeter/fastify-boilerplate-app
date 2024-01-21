@@ -1,3 +1,5 @@
+import {FastifySchema} from "fastify";
+
 /**
  * Defines the configuration options for the RouteFactory plugin, including a base path
  * for API routes and an array of configurations for each collection.
@@ -14,6 +16,12 @@ export interface RouteFactoryOptions {
 export interface CollectionConfig {
     name: string;
     fields: FieldConfig[];
+    schema?: {
+        get?: FastifySchema;
+        post?: FastifySchema;
+        put?: FastifySchema;
+        delete?: FastifySchema;
+    };
 }
 
 /**

@@ -12,25 +12,29 @@ export class RouteFactory {
     }
     registerCollectionRoutes(collection) {
         const basePath = `${this.options.basePath}/${collection.name}`;
-        this.fastify.post(basePath, async (request, reply) => {
+        const postSchema = collection.schema?.post?.valueOf() || {};
+        const getSchema = collection.schema?.get?.valueOf() || {};
+        const putSchema = collection.schema?.put?.valueOf() || {};
+        const deleteSchema = collection.schema?.delete?.valueOf() || {};
+        this.fastify.post(basePath, { schema: postSchema }, async (request, reply) => {
             return this.handleCollectionCreate(request, reply, collection.fields);
         });
-        this.fastify.get(basePath, async (request, reply) => {
+        this.fastify.get(basePath, { schema: getSchema }, async (request, reply) => {
             return this.handleCollectionRead(request, reply, collection.fields);
         });
-        this.fastify.get(`${basePath}/:id`, async (request, reply) => {
+        this.fastify.get(`${basePath}/:id`, { schema: getSchema }, async (request, reply) => {
             return this.handleCollectionReadOne(request, reply);
         });
-        this.fastify.put(`${basePath}/:id`, async (request, reply) => {
+        this.fastify.put(`${basePath}/:id`, { schema: putSchema }, async (request, reply) => {
             return this.handleCollectionUpdate(request, reply);
         });
-        this.fastify.delete(`${basePath}/:id`, async (request, reply) => {
+        this.fastify.delete(`${basePath}/:id`, { schema: deleteSchema }, async (request, reply) => {
             return this.handleCollectionDelete(request, reply);
         });
     }
     async handleCollectionCreate(request, reply, fields) {
         try {
-            const result = await this.fastify.db.insert(request.routerPath.split('/')[2], request.body);
+            const result = await this.fastify.db.insert(request.routeOptions.url.split('/')[2], request.body);
             return reply.code(201).send(result);
         }
         catch (error) {
@@ -39,7 +43,7 @@ export class RouteFactory {
     }
     async handleCollectionRead(request, reply, fields) {
         try {
-            const items = await this.fastify.db.find(request.routerPath.split('/')[2], {});
+            const items = await this.fastify.db.find(request.routeOptions.url.split('/')[2], {});
             return reply.send(items);
         }
         catch (error) {
@@ -49,7 +53,7 @@ export class RouteFactory {
     async handleCollectionReadOne(request, reply) {
         try {
             const id = this.fastify.db.getID(request.params.id);
-            const item = await this.fastify.db.findOne(request.routerPath.split('/')[2], { _id: id });
+            const item = await this.fastify.db.findOne(request.routeOptions.url.split('/')[2], { _id: id });
             if (item) {
                 return reply.send(item);
             }
@@ -64,7 +68,7 @@ export class RouteFactory {
     async handleCollectionUpdate(request, reply) {
         try {
             const id = this.fastify.db.getID(request.params.id);
-            const result = await this.fastify.db.update(request.routerPath.split('/')[2], { _id: id }, { $set: request.body });
+            const result = await this.fastify.db.update(request.routeOptions.url.split('/')[2], { _id: id }, { $set: request.body });
             return reply.code(200).send({ message: 'Item updated', result });
         }
         catch (error) {
@@ -74,7 +78,7 @@ export class RouteFactory {
     async handleCollectionDelete(request, reply) {
         try {
             const id = this.fastify.db.getID(request.params.id);
-            const result = await this.fastify.db.delete(request.routerPath.split('/')[2], { _id: id });
+            const result = await this.fastify.db.delete(request.routeOptions.url.split('/')[2], { _id: id });
             return reply.code(200).send({ message: 'Item deleted', result });
         }
         catch (error) {

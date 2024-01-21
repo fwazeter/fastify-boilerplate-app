@@ -7,6 +7,7 @@ import dbConnection from "./plugins/dbConnection.js";
 import { MongoDbManager } from "./plugins/MongoDbManager.js";
 import dbManager from "./plugins/dbManager.js";
 import routeFactory from "./plugins/route-factory/index.js";
+import { SchemaBuilder } from "./plugins/schema-builder/index.js";
 const envSchema = {
     type: 'object',
     required: ['PORT', 'DB_URL', 'DB_NAME'],
@@ -58,6 +59,18 @@ async function buildServer() {
         dir: path.join(__dirname, 'routes'),
         options: { prefix: '/api' },
     });
+    const productSchema = SchemaBuilder.add({
+        name: 'string',
+        price: 'number',
+        email: 'email',
+        inStock: 'boolean',
+        tags: 'array',
+        details: {
+            manufacturer: 'string',
+            warranty: 'string'
+        }
+    }, ['name', 'price', 'email', 'details.manufacturer']).valueOf();
+    console.log(productSchema.valueOf());
     const routeBuilderOptions = {
         basePath: '/test',
         collections: [
@@ -66,10 +79,15 @@ async function buildServer() {
                 fields: [
                     { key: 'name', type: 'string' },
                     { key: 'price', type: 'number' }
-                ]
+                ],
+                schema: {
+                    post: { body: productSchema }
+                }
             }
         ]
     };
+    console.log(routeBuilderOptions);
+    console.log(routeBuilderOptions.collections[0].schema);
     app.register(routeFactory, routeBuilderOptions);
     return app;
 }
