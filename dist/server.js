@@ -83,7 +83,7 @@ async function buildServer() {
             }
         ]
     };
-    console.log(routeBuilderOptions);
+    console.log(routeBuilderOptions.valueOf());
     console.log(routeBuilderOptions.collections[0].schema);
     app.register(routeFactory, routeBuilderOptions);
     return app;

@@ -145,7 +145,7 @@ async function buildServer() {
             // Add more collections as needed
         ]
     };
-    console.log(routeBuilderOptions);
+    console.log(routeBuilderOptions.valueOf());
     console.log(routeBuilderOptions.collections[0].schema);
 
     app.register(routeFactory, routeBuilderOptions);
